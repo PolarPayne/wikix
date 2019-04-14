@@ -1,7 +1,6 @@
 package types
 
 import (
-	"html/template"
 	"io"
 	"time"
 )
@@ -17,7 +16,7 @@ type StaticAll []string
 
 type Page struct {
 	Name         string
-	Content      template.HTML
+	Content      string
 	Tags         []string
 	LastModified time.Time
 	Created      time.Time

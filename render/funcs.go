@@ -1,10 +1,13 @@
 package render
 
-import "log"
+import (
+	"errors"
+	"fmt"
+)
 
-func dict(args ...interface{}) map[string]interface{} {
+func dict(args ...interface{}) (map[string]interface{}, error) {
 	if len(args)%2 != 0 {
-		return nil
+		return nil, errors.New("dict must be called with even number of arguments")
 	}
 
 	out := make(map[string]interface{})
@@ -13,14 +16,13 @@ func dict(args ...interface{}) map[string]interface{} {
 
 		kString, ok := k.(string)
 		if !ok {
-			log.Printf("%v is not a valid key for dictionary", k)
-			return nil
+			return nil, fmt.Errorf("%v is not a valid key for dictionary", k)
 		}
 
 		out[kString] = v
 	}
 
-	return out
+	return out, nil
 }
 
 func list(args ...interface{}) []interface{} {

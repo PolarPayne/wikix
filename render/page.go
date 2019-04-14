@@ -1,9 +1,8 @@
 package render
 
 import (
-	"html/template" // should this be text/template ??
-	"log"
 	"regexp"
+	"text/template"
 
 	"github.com/valyala/bytebufferpool"
 
@@ -29,17 +28,15 @@ type Page struct {
 	funcs map[string]interface{}
 }
 
-func (p *Page) funcMacro(macro string, data interface{}) string {
-	fp, err := afero.ReadFile(p.fs, macro)
+func (p *Page) funcMacro(macro string, data interface{}) (string, error) {
+	fp, err := afero.ReadFile(p.fs, macro+".md")
 	if err != nil {
-		log.Printf("failed to read macro %v: %v", macro, err)
-		return ""
+		return "", err
 	}
 
 	tmpl, err := template.New(macro).Funcs(p.funcs).Parse(string(fp))
 	if err != nil {
-		log.Printf("failed to parse macro %v: %v", macro, err)
-		return ""
+		return "", err
 	}
 
 	b := bytebufferpool.Get()
@@ -47,26 +44,25 @@ func (p *Page) funcMacro(macro string, data interface{}) string {
 
 	err = tmpl.ExecuteTemplate(b, macro, data)
 	if err != nil {
-		log.Printf("failed to execute macro %v: %v", macro, err)
-		return ""
+		return "", err
 	}
 
-	return b.String()
+	return b.String(), nil
 }
 
 func NewPage(fs afero.Fs) *Page {
 	out := new(Page)
 	out.fs = fs
 	out.funcs = map[string]interface{}{
-		"macro": out.funcMacro,
-		"dict":  dict,
-		"list":  list,
+		"include": out.funcMacro,
+		"dict":    dict,
+		"list":    list,
 	}
 
 	return out
 }
 
-func (p *Page) Render(data []byte, unsafe bool) (template.HTML, error) {
+func (p *Page) Render(data []byte, unsafe bool) (string, error) {
 	tmpl, err := template.New("main").Funcs(p.funcs).Parse(string(data))
 	if err != nil {
 		return "", err
@@ -86,7 +82,7 @@ func (p *Page) Render(data []byte, unsafe bool) (template.HTML, error) {
 	html := markdown.ToHTML(md, markdownParser, nil)
 
 	if !unsafe {
-		return template.HTML(bluemonday.UGCPolicy().SanitizeBytes(html)), nil
+		return string(bluemonday.UGCPolicy().SanitizeBytes(html)), nil
 	}
-	return template.HTML(html), nil
+	return string(html), nil
 }

@@ -44,6 +44,8 @@ func NewTemplate(fs afero.Fs) *Template {
 	out.fs = fs
 	out.funcs = map[string]interface{}{
 		"include": out.funcInclude,
+		"dict":    dict,
+		"list":    list,
 	}
 	return out
 }
