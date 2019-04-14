@@ -14,12 +14,13 @@ import (
 )
 
 type FS struct {
-	FS     afero.Fs
-	Unsafe bool
+	FS           afero.Fs
+	Unsafe       bool
+	pageRenderer *render.Page
 }
 
-func NewFS(fs afero.Fs, unsafe bool) *FS {
-	return &FS{fs, unsafe}
+func NewFS(fs, macroFS afero.Fs, unsafe bool) *FS {
+	return &FS{fs, unsafe, render.NewPage(macroFS)}
 }
 
 func (s *FS) pageHeader(name string) (types.Page, error) {
@@ -113,7 +114,10 @@ func (s *FS) Page(name string) (types.Page, error) {
 	}
 
 	out.Name = name
-	out.Content = render.Page(content.Bytes(), s.Unsafe)
+	out.Content, err = s.pageRenderer.Render(content.Bytes(), s.Unsafe)
+	if err != nil {
+		return types.Page{}, err
+	}
 	sort.Strings(out.Tags)
 
 	return out, nil

@@ -58,7 +58,7 @@ func (s *server) errPage(w http.ResponseWriter, code int, err interface{}, args 
 		panic("err is of invalid type, it must be one of `string`, `[]byte`, `error`, `fmt.Stringer`")
 	}
 
-	out, er := s.Template.Render("error.html", types.Error{errString, code})
+	out, er := s.Template.Render("error.html", types.Error{Error: errString, Code: code})
 	if er != nil {
 		w.WriteHeader(500)
 		io.WriteString(w, er.Error())

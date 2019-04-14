@@ -15,6 +15,7 @@ var (
 	varUnsafe       = flag.Bool("unsafe", false, "allow arbitary html in markdown")
 	varPathTemplate = flag.String("template", "template", "path to template directory")
 	varPathStatic   = flag.String("static", "static", "path to static directory")
+	varPathMacro    = flag.String("macro", "macro", "path to macro directory")
 	varPathPage     = flag.String("page", "page", "path to page directory")
 	varRootPage     = flag.String("root-page", "Welcome", "page that is used for the root path (homepage)")
 	varHost         = flag.String("host", "localhost", "host that the application is started on")
@@ -30,7 +31,7 @@ func main() {
 
 	s := server{
 		render.NewTemplate(af(*varPathTemplate)),
-		page.NewFS(af(*varPathPage), *varUnsafe),
+		page.NewFS(af(*varPathPage), af(*varPathMacro), *varUnsafe),
 		static.NewFS(af(*varPathStatic)),
 	}
 
